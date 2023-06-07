@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE DAOConfiguration [
+
+	<!ELEMENT DAOConfiguration (DAOStatements+)>
+
+	<!ELEMENT DAOStatements (SQLStatement+)>
+	<!ATTLIST DAOStatements
+		database CDATA #REQUIRED
+	>
+ 
+	<!ELEMENT SQLStatement (SQLFragment+)>
+	<!ATTLIST SQLStatement
+		method (TEST_1) #REQUIRED
+	>
+
+	<!ELEMENT SQLFragment (#PCDATA)>
+	<!ATTLIST SQLFragment
+		excludeIfNamedParamEmpty (TRUE|FALSE) "FALSE"
+	>
+]>
+
+<DAOConfiguration>
+	<DAOStatements database="hsqldb">
+		<SQLStatement method="TEST_1">
+			<SQLFragment>
+				UPDATE users SET
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				access_levels = {accessLevel}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				password = {password}
+			</SQLFragment>
+			<SQLFragment>
+				WHERE username = {username}
+			</SQLFragment>
+		</SQLStatement>
+	</DAOStatements>
+
+	</DAOStatements>
+</DAOConfiguration>

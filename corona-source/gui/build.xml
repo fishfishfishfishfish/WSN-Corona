@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="corona-gui" default="run" basedir=".">
+	<property file="build.properties"/>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+	
+	<path id="our.classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+		<pathelement location="${build.dir}" />
+		<pathelement location="${resources.dir}" />
+	</path>
+	
+	<target name="compile">
+		<mkdir dir="${build.dir}" />
+		<javac srcdir="${src.dir}"
+				destdir="${build.dir}"
+				includeAntRuntime="no"
+				includeJavaRuntime="no"
+				target="1.5"
+				source="1.5"
+				debug="true"
+				fork="yes">
+				<!-- <classpath refid="our.classpath" /> -->
+				<classpath>
+					<fileset dir="${lib.dir}" includes="**/*.jar" />
+					<pathelement location="${resources.dir}" />
+				</classpath>
+		</javac>
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="${main.class}"
+				fork="true"
+				failonerror="true">
+			<arg line="${main.args}"/>
+			<classpath refid="our.classpath" />
+		</java>
+	</target>
+
+</project>

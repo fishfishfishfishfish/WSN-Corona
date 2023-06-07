@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head></head>
+<body>
+
+Contains both the interfaces and actual implementations of 
+{@link au.edu.usyd.corona.srdb} data types that are used throughout the system. 
+
+<h2>Package Specification</h2>
+<p>
+SRDB, the SunSPOT Relational Database layer that we have implemented, has its 
+own data type definition. Each of these data types have certain operators 
+defined, and for all intensive purposes are valid data types as in any 
+programming language.
+</p>
+
+<p>
+The default data types we provide (and use) within the system are:
+<ul>
+	<li>{@link au.edu.usyd.corona.types.BooleanType}</li>
+	<li>{@link au.edu.usyd.corona.types.ByteType}</li>
+	<li>{@link au.edu.usyd.corona.types.FloatType}</li>
+	<li>{@link au.edu.usyd.corona.types.IEEEAddressType}</li>
+	<li>{@link au.edu.usyd.corona.types.IntType}</li>
+	<li>{@link au.edu.usyd.corona.types.LongType}</li>
+</ul>
+</p>
+
+<p>
+If someone wishes to add a new data type to the system, all they have to do  
+is create a class that implements {@link au.edu.usyd.corona.types.ValueType}. 
+This interface defines the operators and the the other required methods that
+a SRDB data type must have. An SRDB data type <b>must</b> also have a default
+constructor. 
+</p>
+
+<p>
+When implementing operators, if data type X can not perform operation A on
+data type Y, then in the implementation of operator A in class X, if the 
+argument to operator A is of type Y, then a 
+{@link au.edu.usyd.corona.types.InvalidOperationException} should be thrown. 
+</p>
+
+</body>
+</html>

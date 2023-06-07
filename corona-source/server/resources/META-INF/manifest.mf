@@ -1,0 +1,6 @@
+MIDlet-Name: corona-desktop
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: University of Sydney
+MIDlet-1: ,, au.edu.usyd.corona.server.Startup
+MicroEdition-Profile: IMP-1.0
+MicroEdition-Configuration: CLDC-1.1

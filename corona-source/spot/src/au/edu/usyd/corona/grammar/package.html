@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head></head>
+<body>
+
+<p>
+This package contains classes that deal with parsing and interpreting of the
+token grammar language; the language that SQL queries are compiled down to that
+is executed on the SunSPOT nodes.
+</p>
+
+<h2>Package Specification</h2>
+<p>
+Queries in our SQL query language are compiled down to a different representation
+which we call our <i>token grammar language</i>. It is a very simple list-based 
+language, and as such the classes in this package are not huge in size. When a 
+node receives a compiled query in this token language format, it parses it, and
+converts it to an executable parse tree (see {@link au.edu.usyd.corona.srdb}. 
+This process has to be as fast as possible in case the query is meant to be
+executing immediately, so a very simple parser is written.   
+</p>
+
+
+</body>
+</html>

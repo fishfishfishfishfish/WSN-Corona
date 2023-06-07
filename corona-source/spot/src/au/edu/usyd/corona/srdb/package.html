@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head></head>
+<body>
+
+<p>
+SRDB is an acronym for <i>SunSPOT Relational Database</i>; a relational database
+system that we have written which implements the standard relational algebra. 
+<p>
+
+<h2>Package Specification</h2>
+<p>
+SRDB is a distributed relational database system that we have constructed for 
+Corona. When you fire off a SQL query into the Corona network, conceptually what
+SRDB does is allows the network to be viewed as one database table, and the
+workload of performing the relational algebraic operations is distributed across
+all the nodes. Each of the nodes provides up to one record of data also (from 
+the sensors), so each node still has to process the query. Some aggregation can
+not be done distributed, so in this case the processing is withheld until all
+the results get propagated back to the basestation of the network. 
+</p>
+
+<p>
+The {@link au.edu.usyd.corona.srdb.Table} class represents a logical database 
+table in SRDB, and the attributes in the table are all a {@link au.edu.usyd.corona.types.ValueType}. 
+</p>
+
+<p>
+Relational projection is implemented in the {@link au.edu.usyd.corona.srdb.ProjectionOperator} 
+class, relational selection in the {@link au.edu.usyd.corona.srdb.SelectionOperator} 
+class, and set union in the {@link au.edu.usyd.corona.srdb.MergeOperator} class.
+Cross product is also implemented ({@link au.edu.usyd.corona.srdb.CrossProductOperator})
+but we do not currently use it in any of our implementation. It is there so that
+SRDB implements the full set of relational albegra operations, and so that future
+work on SRDB may incorporate this.
+</p>
+
+
+</body>
+</html>

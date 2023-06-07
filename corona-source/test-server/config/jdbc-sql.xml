@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE DAOConfiguration [
+
+	<!ELEMENT DAOConfiguration (DAOStatements+)>
+
+	<!ELEMENT DAOStatements (SQLStatement+)>
+	<!ATTLIST DAOStatements
+		database CDATA #REQUIRED
+	>
+ 
+	<!ELEMENT SQLStatement (SQLFragment+)>
+	<!ATTLIST SQLStatement
+		method (INSERT_TASK|UPDATE_TASK|DELETE_TASK|RETRIEVE_TASK|RETRIEVE_TASK_LIMIT|CREATE_TASK_TABLE|CHECK_TASK_TABLE|COUNT_TABLE|GET_MAX_QUERYID|CREATE_RESULT_TABLE|INSERT_RESULT_ROW|RETRIEVE_RESULT_TABLE|RETRIEVE_RESULT_TABLE_LIMIT|CHECK_TABLE|CREATE_USERS_TABLE|INSERT_USER|INSERT_USER_FULL|UPDATE_USER_USERNAME|UPDATE_USER_ACCESS|UPDATE_USER_PASSWORD|DELETE_USER|GET_USER|GET_USER_LIMIT|CHECK_USER_PASSWORD|DROP_TABLE|CREATE_QUERY_TABLE|INSERT_QUERY|DELETE_QUERY|RETRIEVE_QUERY|RETRIEVE_QUERY_LIMIT|GET_MAX_TASKID) #REQUIRED
+	>
+
+	<!ELEMENT SQLFragment (#PCDATA)>
+	<!ATTLIST SQLFragment
+		excludeIfNamedParamEmpty (TRUE|FALSE) "FALSE"
+	>
+]>
+
+<DAOConfiguration>
+	<DAOStatements database="hsqldb">
+		<SQLStatement method="COUNT_TABLE">
+			<SQLFragment>
+				SELECT count(*) FROM ({query})
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CHECK_TABLE">
+			<SQLFragment>
+				SELECT count(*) FROM {table} WHERE 1=2
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="GET_MAX_QUERYID">
+			<SQLFragment>
+				SELECT max(queryID) FROM queries
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_QUERY_TABLE">
+			<SQLFragment>
+				CREATE TABLE queries (
+					queryID INTEGER,
+					query VARCHAR,
+					firstExecutionTime BIGINT,
+					submittedTime BIGINT,
+					user INTEGER,
+					rootTaskQueryID INTEGER,
+					rootTaskNodeID BIGINT,
+					rootTaskLocalTaskID INTEGER,
+					PRIMARY KEY (queryID)
+				);
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="INSERT_QUERY">
+			<SQLFragment>
+				INSERT INTO queries VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_QUERY">
+			<SQLFragment>
+				DELETE FROM queries WHERE queryID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_QUERY_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ? ?
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM queries, tasks, users
+			</SQLFragment>
+			<SQLFragment>
+				WHERE rootTaskQueryID = qID AND rootTaskNodeID = nodeID AND rootTaskLocalTaskID = localTaskID AND id = user
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				AND {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_QUERY">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM queries, tasks, users
+			</SQLFragment>
+			<SQLFragment>
+				WHERE rootTaskQueryID = qID AND rootTaskNodeID = nodeID AND rootTaskLocalTaskID = localTaskID AND id = user
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				AND {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="CREATE_TASK_TABLE">
+			<SQLFragment>
+				CREATE TABLE tasks (
+					qID INTEGER,
+					nodeID BIGINT,
+					localTaskID INTEGER,
+					executionTime BIGINT,
+					reschedulePeriod BIGINT,
+					runCountTotal INTEGER,
+					runCountLeft INTEGER,
+					status INTEGER,
+					PRIMARY KEY (qID, nodeID, localTaskID)
+				);
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="GET_MAX_TASKID">
+			<SQLFragment>
+				SELECT max(localTaskID) FROM tasks WHERE nodeID = ? AND qID = (SELECT max(qID) FROM tasks)
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_TASK">
+			<SQLFragment>
+				INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_TASK">
+			<SQLFragment>
+				UPDATE tasks SET 
+					executionTime=?,
+					reschedulePeriod=?,
+					runCountTotal=?,
+					runCountLeft=?,
+					status=?
+				WHERE qID = ? AND nodeID = ? AND localTaskID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_TASK">
+			<SQLFragment>
+				DELETE FROM localTaskID WHERE qID = ? AND nodeID = ? AND localTaskID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_TASK_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT {start} {num}
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM tasks
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_TASK">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM tasks
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_RESULT_TABLE">
+			<SQLFragment>
+				CREATE TABLE {table} ({attribs});
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_RESULT_ROW">
+			<SQLFragment>
+				INSERT INTO {table} VALUES({values});
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_RESULT_TABLE_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ? ?
+			</SQLFragment>
+			<SQLFragment>
+				{select}
+				FROM {table}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				GROUP BY {groupby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				HAVING {having}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_RESULT_TABLE">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				{select}
+				FROM {table}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				GROUP BY {groupby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				HAVING {having}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_USERS_TABLE">
+			<SQLFragment>
+				CREATE TABLE users (
+					id INTEGER GENERATED BY DEFAULT AS IDENTITY(START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+					username VARCHAR NOT NULL,
+					password VARCHAR NOT NULL,
+					access_level VARCHAR NOT NULL,
+					CONSTRAINT users_unique_username UNIQUE (username)
+				);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_USER">
+			<SQLFragment>
+				INSERT INTO users VALUES (null, ?, ?, ?);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_USER_FULL">
+			<SQLFragment>
+				INSERT INTO users VALUES (?, ?, ?, ?);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_USERNAME">
+			<SQLFragment>
+				UPDATE users SET username = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_ACCESS">
+			<SQLFragment>
+				UPDATE users SET access_level = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_PASSWORD">
+			<SQLFragment>
+				UPDATE users SET password = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_USER">
+			<SQLFragment>
+				DELETE FROM users WHERE username = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="GET_USER_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ? ?
+			</SQLFragment>
+			<SQLFragment>
+				id, username, access_level
+				FROM users
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+				<SQLStatement method="GET_USER">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				id, username, access_level
+				FROM users
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="CHECK_USER_PASSWORD">
+			<SQLFragment>
+				SELECT password, id, access_level FROM users WHERE username = ? AND password = ?;
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="DROP_TABLE">
+			<SQLFragment>
+				DROP TABLE {table};
+			</SQLFragment>
+		</SQLStatement>
+
+	</DAOStatements>
+	
+	<!-- MYSQL -->
+	<DAOStatements database="mysql">
+		<SQLStatement method="COUNT_TABLE">
+			<SQLFragment>
+				SELECT count(*) FROM ({query}) AS counted
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CHECK_TABLE">
+			<SQLFragment>
+				SELECT count(*) FROM {table} WHERE 1=2
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="GET_MAX_QUERYID">
+			<SQLFragment>
+				SELECT max(queryID) FROM queries
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_QUERY_TABLE">
+			<SQLFragment>
+				CREATE TABLE queries (
+					queryID INTEGER,
+					query VARCHAR(1000),
+					firstExecutionTime BIGINT,
+					submittedTime BIGINT,
+					user INTEGER,
+					rootTaskQueryID INTEGER,
+					rootTaskNodeID BIGINT,
+					rootTaskLocalTaskID INTEGER,
+					PRIMARY KEY (queryID)
+				);
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="INSERT_QUERY">
+			<SQLFragment>
+				INSERT INTO queries VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_QUERY">
+			<SQLFragment>
+				DELETE FROM queries WHERE queryID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_QUERY">
+			<SQLFragment>
+				SELECT 
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM queries, tasks, users
+			</SQLFragment>
+			<SQLFragment>
+				WHERE rootTaskQueryID = qID AND rootTaskNodeID = nodeID AND rootTaskLocalTaskID = localTaskID AND id = user
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				AND {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_QUERY_LIMIT">
+			<SQLFragment>
+				SELECT 
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM queries, tasks, users
+			</SQLFragment>
+			<SQLFragment>
+				WHERE rootTaskQueryID = qID AND rootTaskNodeID = nodeID AND rootTaskLocalTaskID = localTaskID AND id = user
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				AND {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ?, ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="CREATE_TASK_TABLE">
+			<SQLFragment>
+				CREATE TABLE tasks (
+					qID INTEGER,
+					nodeID BIGINT,
+					localTaskID INTEGER,
+					executionTime BIGINT,
+					reschedulePeriod BIGINT,
+					runCountTotal INTEGER,
+					runCountLeft INTEGER,
+					status INTEGER,
+					PRIMARY KEY (qID, nodeID, localTaskID)
+				);
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="GET_MAX_TASKID">
+			<SQLFragment>
+				SELECT max(localTaskID) FROM tasks WHERE nodeID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_TASK">
+			<SQLFragment>
+				INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_TASK">
+			<SQLFragment>
+				UPDATE tasks SET 
+					executionTime=?,
+					reschedulePeriod=?,
+					runCountTotal=?,
+					runCountLeft=?,
+					status=?
+				WHERE qID = ? AND nodeID = ? AND localTaskID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_TASK">
+			<SQLFragment>
+				DELETE FROM localTaskID WHERE qID = ? AND nodeID = ? AND localTaskID = ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_TASK_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM tasks
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT {start}, {num}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_TASK">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				*
+				FROM tasks
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_RESULT_TABLE">
+			<SQLFragment>
+				CREATE TABLE {table} ({attribs});
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_RESULT_ROW">
+			<SQLFragment>
+				INSERT INTO {table} VALUES({values});
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_RESULT_TABLE_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				{select}
+				FROM {table}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				GROUP BY {groupby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				HAVING {having}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ?, ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="RETRIEVE_RESULT_TABLE">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				{select}
+				FROM {table}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				GROUP BY {groupby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				HAVING {having}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="CREATE_USERS_TABLE">
+			<SQLFragment>
+				CREATE TABLE users (
+					id INTEGER NOT NULL AUTO_INCREMENT,
+					username VARCHAR(255),
+					password VARCHAR(255),
+					access_level VARCHAR(255),
+					UNIQUE (username),
+					PRIMARY KEY (id)
+				);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_USER">
+			<SQLFragment>
+				INSERT INTO users VALUES (null, ?, ?, ?);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="INSERT_USER_FULL">
+			<SQLFragment>
+				INSERT INTO users VALUES (?, ?, ?, ?);
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_USERNAME">
+			<SQLFragment>
+				UPDATE users SET username = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_ACCESS">
+			<SQLFragment>
+				UPDATE users SET access_level = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="UPDATE_USER_PASSWORD">
+			<SQLFragment>
+				UPDATE users SET password = ? WHERE id = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="DELETE_USER">
+			<SQLFragment>
+				DELETE FROM users WHERE username = ?;
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="GET_USER_LIMIT">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				id, username, access_level
+				FROM users
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				LIMIT ?, ?
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="GET_USER">
+			<SQLFragment>
+				SELECT
+			</SQLFragment>
+			<SQLFragment>
+				id, username, access_level
+				FROM users
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				WHERE {where}
+			</SQLFragment>
+			<SQLFragment excludeIfNamedParamEmpty="TRUE">
+				ORDER BY {orderby}
+			</SQLFragment>
+		</SQLStatement>
+		
+		<SQLStatement method="CHECK_USER_PASSWORD">
+			<SQLFragment>
+				SELECT password, id, access_level FROM users WHERE username = ? AND STRCMP(BINARY password, ?) = 0;
+			</SQLFragment>
+		</SQLStatement>
+
+		<SQLStatement method="DROP_TABLE">
+			<SQLFragment>
+				DROP TABLE {table};
+			</SQLFragment>
+		</SQLStatement>
+
+	</DAOStatements>
+</DAOConfiguration>

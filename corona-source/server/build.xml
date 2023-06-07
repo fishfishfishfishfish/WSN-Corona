@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="corona-server" default="help" basedir=".">
+	<property file="${user.home}/.sunspot.properties"/>
+	<property name="user.properties.file" value="build.properties"/>
+	<import file="${sunspot.home}/build.xml"/>
+
+	<!-- Override to compile using Java 1.5 -->
+	<target name="-do-host-compile">
+		<mkdir dir="${build.dir}" />
+		<javac srcdir="${src.dir}"
+				destdir="${build.dir}"
+				includeAntRuntime="no"
+				includeJavaRuntime="no"
+				classpath="${hostagent.compile.classpath}${path.separator}${user.classpath}"
+				target="1.5"
+				source="1.5"
+				debug="true"
+				fork="yes">
+				<compilerarg value="-Xlint" />
+		</javac>
+	</target>
+
+	<!-- Override to create a Corona repos JAR file for the desktop project -->
+	<target name="-post-host-compile" depends="-rmic">
+		<!-- create the secondary RMI interface project jar -->
+		<jar destfile="${corona.repos}/${rmi.jar.file}" >
+			<fileset dir="${build.dir}" includes="**/Remote*.class" />
+			<fileset dir="${build.dir}" includes="**/_Stub.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/grammar/Query.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/persistence/JDBCDAO/JavaToJDBCTypes.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/session/*Exception.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/session/notifier/NotifierID.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/session/notifier/NotifierID$NotifierType.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/session/notifier/NotifierInterface.class" />
+			<fileset dir="${build.dir}" includes="au/edu/usyd/corona/server/user/*.class" />
+		</jar>
+	</target>
+
+	<!-- compiles rmi stubs -->
+	<target name="-rmic">
+		<rmic base="${build.dir}" includes="**/Remote*.class" excludes="**/antlr/** **/Remote*Interface.class" />
+	</target>
+
+	<!-- Override to start rmi process -->
+	<target name="-pre-host-run">
+		<exec executable="rmiregistry" dir="${build.dir}" spawn="true" />
+	</target>
+
+	<!-- Override to run with rmi security policy -->
+	<!--			  jvm="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Commands/java" -->
+	<target name="-do-host-run">
+		<fail unless="port">Must set port on command line (-Dport=xxxx)</fail>
+        <java classname="${main.class}"
+					classpath="${build.dir}${path.separator}${hostagent.run.classpath}"
+					fork="true"
+					failonerror="true">
+			<sysproperty key="spot.basestation.sharing" value="${multi.process.basestation.sharing}" />
+			<sysproperty key="spotclient.addin.classes" value="${spotclient.all.addin.classes}" />
+            <jvmarg value="-Djava.library.path=${sunspot.lib}${path.separator}${user.library.path}"/>
+            <jvmarg value="-DSERIAL_PORT=${port}"/>
+			<jvmarg value="-Dremote.channel=${remote.channel}"/>
+        	<jvmarg value="-Dremote.pan.id=${remote.pan.id}"/>
+        	<jvmarg value="-Dspot.mesh.route.logging=${spot.mesh.route.logging}"/>
+        	<jvmarg value="-Dspot.log.connections=${spot.log.connections}"/>
+			<jvmarg value="-Djava.security.policy=rmi.policy"/>
+        	<jvmarg line="${host.jvmargs}"/>
+        	<arg line="${main.args}"/>
+        </java> 
+    </target>
+
+	<target name="dao-clean" depends="host-compile">
+		<java classname="${daoclean.class}"
+				fork="true"
+				failonerror="true"
+				classpath="${build.dir}${path.separator}${user.classpath}">
+		</java>
+	</target>
+
+</project>

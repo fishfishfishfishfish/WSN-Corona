@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="corona-test-spot" default="help" basedir=".">
+	<property file="${user.home}/.sunspot.properties"/>
+	<property file="${sunspot.home}/default.properties"/>
+	<property file="build.properties"/>
+	
+	<path id="our.classpath">
+		<pathelement path="${sunspot.classpath}" />
+		<pathelement path="${utility.jars.on.classpath}" />
+		<pathelement path="${hostagent.compile.classpath}" />
+		<pathelement path="${spot.dir}/build" />
+		<pathelement path="${server.dir}/build" />
+		<fileset dir="${spot.dir}/lib" includes="**/*.jar"/>
+		<fileset dir="${server.dir}/lib" includes="**/*.jar"/>
+		<pathelement location="${sunspot.lib}/junit.jar" />
+		<pathelement path="build" />
+		<pathelement path="." />
+	</path>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="build" />
+		<javac srcdir="src" destdir="build">
+			<classpath refid="our.classpath" />
+		</javac>
+	</target>
+
+	<target name="run">
+		<junit tempdir="build" printsummary="yes" failureproperty="tests.failed">
+			<classpath refid="our.classpath" />
+			<formatter type="plain"/>
+			<batchtest fork="yes" todir="build">
+				<fileset dir="src" includes="**/*Test*.java" />
+			</batchtest>
+		</junit>
+
+		<fail if="tests.failed" message="JUnit unit tests failed" />
+	</target>
+
+</project>

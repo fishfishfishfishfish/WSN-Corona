@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head></head>
+<body>
+
+<p>
+The compression classes and interfaces can be found in this package, which are
+used when ever data size is a concern.
+</p>
+
+<h2>Package Specification</h2>
+<p>
+When data is sent via the wireless radio, it is compressed beforehand in order 
+to minimise the amount of energy used. The compression classes and interfaces 
+can be found in this package. If someone wants to replace the default 
+compression that we provide 
+({@link au.edu.usyd.corona.compression.JZlibCompressor}) with their
+own custom  compression classes, all they need to do is make it implement the 
+{@link au.edu.usyd.corona.compression.Compressor} interface, and replace the 
+instantiations of 
+{@link au.edu.usyd.corona.compression.JZlibCompressor} with their
+own class instead. 
+</p>
+
+<p>
+To find all instantiations of 
+{@link au.edu.usyd.corona.compression.JZlibCompressor}, use your 
+IDE of choice, or the following bash command:
+<pre>
+$ find . -name "*.java" | xargs grep -n "new JZlibCompressor"
+</pre>
+</p>
+
+</body>
+</html>
